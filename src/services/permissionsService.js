@@ -52,3 +52,8 @@ exports.deleteAllPermissionsByTable = async (table_id) => {
   );
   return result.rows[0];
 };
+
+exports.getPermissionsByRole = async (role_id) => {
+  const result = await pool.query('SELECT * FROM obtener_permisos_de_rol($1)', [role_id]);
+  return result.rows;
+};

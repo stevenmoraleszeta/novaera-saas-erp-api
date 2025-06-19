@@ -47,3 +47,8 @@ exports.existsTableNameInModule = async (module_id, name) => {
   );
   return result.rows[0].exists;
 };
+
+exports.getTables = async () => {
+  const result = await pool.query('SELECT id, name FROM tables ORDER BY name ASC');
+  return result.rows;
+};

@@ -9,5 +9,6 @@ router.delete('/role/:role_id/table/:table_id', permissionsController.deleteRole
 router.get('/table/:table_id/users', permissionsController.getUsersWithPermissions);
 router.post('/table/:table_id/roles', permissionsController.assignMassivePermissions);
 router.delete('/table/:table_id', permissionsController.deleteAllPermissionsByTable);
+router.get('/role/:role_id', permissionsController.getPermissionsByRole);
 
 module.exports = router;

@@ -8,5 +8,6 @@ router.get('/:table_id', tablesController.getTableById);
 router.put('/:table_id', tablesController.updateTable);
 router.delete('/:table_id', tablesController.deleteTable);
 router.get('/exists/name', tablesController.existsTableNameInModule);
+router.get('/', tablesController.getTables);
 
 module.exports = router;

@@ -69,3 +69,13 @@ exports.deleteAllPermissionsByTable = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+exports.getPermissionsByRole = async (req, res) => {
+  try {
+    const { role_id } = req.params;
+    const permissions = await permissionsService.getPermissionsByRole(role_id);
+    res.json(permissions);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
