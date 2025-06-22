@@ -42,8 +42,8 @@ exports.getColumnById = async (req, res) => {
 exports.updateColumn = async (req, res) => {
   try {
     const { column_id } = req.params;
-    const { name, data_type, is_required, is_foreign_key, foreign_table_id, foreign_column_name, column_position } = req.body;
-    const result = await columnsService.updateColumn({ column_id, name, data_type, is_required, is_foreign_key, foreign_table_id, foreign_column_name, column_position });
+    const { name, data_type, is_required, is_foreign_key, foreign_table_id, foreign_column_name, column_position, relation_type, validations } = req.body;
+    const result = await columnsService.updateColumn({ column_id, name, data_type, is_required, is_foreign_key, foreign_table_id, foreign_column_name, column_position, relation_type, validations });
     res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });

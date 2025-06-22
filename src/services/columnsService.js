@@ -5,10 +5,11 @@ exports.getColumns = async () => {
   return result.rows;
 };
 
-exports.createColumn = async ({ table_id, name, data_type, is_required, is_foreign_key, foreign_table_id, foreign_column_name, column_position }) => {
+
+exports.createColumn = async ({ table_id, name, data_type, is_required, is_foreign_key, foreign_table_id, foreign_column_name, column_position, relation_type, validations }) => {
   const result = await pool.query(
-    'SELECT sp_crear_columna($1, $2, $3, $4, $5, $6, $7, $8) AS message',
-    [table_id, name, data_type, is_required, is_foreign_key, foreign_table_id, foreign_column_name, column_position]
+    'SELECT sp_crear_columna($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) AS message',
+    [table_id, name, data_type, is_required, is_foreign_key, foreign_table_id, foreign_column_name, column_position, relation_type, validations ]
   );
   return result.rows[0];
 };
@@ -30,10 +31,10 @@ exports.getColumnById = async (column_id) => {
   return result.rows[0];
 };
 
-exports.updateColumn = async ({ column_id, name, data_type, is_required, is_foreign_key, foreign_table_id, foreign_column_name, column_position }) => {
+exports.updateColumn = async ({ column_id, name, data_type, is_required, is_foreign_key, foreign_table_id, foreign_column_name, column_position, relation_type, validations }) => {
   const result = await pool.query(
     'SELECT sp_actualizar_columna($1, $2, $3, $4, $5, $6, $7, $8) AS message',
-    [column_id, name, data_type, is_required, is_foreign_key, foreign_table_id, foreign_column_name, column_position]
+    [column_id, name, data_type, is_required, is_foreign_key, foreign_table_id, foreign_column_name, column_position, relation_type, validations ]
   );
   return result.rows[0];
 };
@@ -64,7 +65,6 @@ exports.columnHasRecords = async (column_id) => {
 
 
 exports.updateColumnPosition = async (column_id, newPosition) => {
-  console.log("sadasdasdsdasd")
   const result = await pool.query(
     'SELECT sp_actualizar_posicion_columna($1, $2)',
     [column_id, newPosition]
