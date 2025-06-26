@@ -2,10 +2,16 @@ const pool = require('../config/db');
 
 exports.createTable = async ({ module_id, name, description }) => {
   const result = await pool.query(
-    'SELECT crear_tabla_logica($1, $2, $3) AS message',
+    'SELECT crear_tabla_logica($1, $2, $3) AS data',
     [module_id, name, description]
   );
-  return result.rows[0];
+  const response = result.rows[0].data;
+
+  if (response.error) {
+    throw new Error(response.error);
+  }
+
+  return response; // { id: 123, message: "Tabla creada correctamente" }
 };
 
 exports.getTablesByModule = async (module_id) => {
