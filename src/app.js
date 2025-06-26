@@ -14,9 +14,16 @@ const authMiddleware = require('./middleware/authMiddleware');
 
 const app = express();
 
-// Configuración de CORS segura para credenciales
+const allowedOrigins = ['http://localhost:3000', 'https://erp-system-17kb.vercel.app'];
 app.use(cors({
-  origin: 'http://localhost:3000', // Cambia esto a tu frontend en producción
+  origin: function(origin, callback) {
+    // Permitir solicitudes sin origen (como Postman) o si el origen está en la lista
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('No permitido por CORS'));
+    }
+  },
   credentials: true
 }));
 
