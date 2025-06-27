@@ -21,8 +21,8 @@ exports.login = async (req, res) => {
     );
     res.cookie('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: true, // siempre true en producción para cross-domain
+      sameSite: 'none', // necesario para cookies cross-domain en HTTPS
       path: '/',
       maxAge: 8 * 60 * 60 * 1000 // 8 horas
     });
