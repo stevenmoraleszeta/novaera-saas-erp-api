@@ -9,5 +9,6 @@ router.put('/:table_id', tablesController.updateTable);
 router.delete('/:table_id', tablesController.deleteTable);
 router.get('/exists/name', tablesController.existsTableNameInModule);
 router.get('/', tablesController.getTables);
+router.post('/join', tablesController.getOrCreateJoinTable);
 
 module.exports = router;
