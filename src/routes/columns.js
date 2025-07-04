@@ -12,4 +12,5 @@ router.get('/table/:table_id/exists-name', columnsController.existsColumnNameInT
 router.get('/:column_id/has-records', columnsController.columnHasRecords);
 router.patch('/:column_id/update_cols', columnsController.updateColumnPosition);
 
+
 module.exports = router;

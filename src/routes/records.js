@@ -10,5 +10,6 @@ router.delete('/:record_id', recordsController.deleteRecord);
 router.get('/table/:table_id/search', recordsController.searchRecordsByValue);
 router.get('/table/:table_id/count', recordsController.countRecordsByTable);
 router.get('/table/:table_id/exists-field', recordsController.existsFieldInRecords);
+router.patch('/:record_id/update_records', recordsController.updateRecordPosition);
 
 module.exports = router;

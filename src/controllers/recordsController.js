@@ -40,11 +40,10 @@ exports.getRecordById = async (req, res) => {
 };
 
 exports.updateRecord = async (req, res) => {
-  console.log("HAY BACKEND: ", req.body);
   try {
     const { record_id } = req.params;
-    const  record_data  = req.body;
-    const result = await recordsService.updateRecord({ record_id, record_data });
+    const  { recordData, position_num }  = req.body;
+    const result = await recordsService.updateRecord({ record_id, recordData, position_num });
     res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -90,5 +89,21 @@ exports.existsFieldInRecords = async (req, res) => {
     res.json({ exists });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+};
+
+exports.updateRecordPosition = async (req, res) => {
+
+  try {
+    const { record_id } = req.params;
+    const { position } = req.body;
+
+    if (position === undefined || isNaN(position)) {
+      return res.status(400).json({ error: 'La nueva posición es requerida y debe ser un número.' });
+    }
+    await recordsService.updateRecordPosition(record_id, Number(position));
+    res.json({ message: 'Posición actualizada correctamente.' });
+  } catch (err) {
+    res.status(500).json({ error: 'Error actualizando la posición del registro.' });
   }
 };

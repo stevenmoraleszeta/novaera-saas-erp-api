@@ -17,14 +17,16 @@ exports.createTable = async (req, res) => {
       name,
       description,
       original_table_id,
-      foreign_table_id
+      foreign_table_id,
+      position_num
     } = tableData;
     const result = await tablesService.createTable({
       module_id,
       name,
       description,
       original_table_id,
-      foreign_table_id
+      foreign_table_id,
+      position_num
     });
     res.status(201).json(result);
   } catch (err) {
@@ -59,14 +61,16 @@ exports.updateTable = async (req, res) => {
       name,
       description,
       original_table_id,
-      foreign_table_id
+      foreign_table_id,
+      position_num
     } = req.body;
     const result = await tablesService.updateTable({
       table_id,
       name,
       description,
       original_table_id,
-      foreign_table_id
+      foreign_table_id,
+      position_num
     });
     res.json(result);
   } catch (err) {
@@ -104,5 +108,23 @@ exports.getOrCreateJoinTable = async (req, res) => {
     res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+};
+
+exports.updateTablePosition = async (req, res) => {
+  try {
+    const { table_id } = req.params;
+    const { position } = req.body;
+
+    if (position === undefined || isNaN(position)) {
+      return res.status(400).json({ error: 'La nueva posición es requerida y debe ser un número.' });
+    }
+
+    await tablesService.updateTablePosition(table_id, Number(position));
+
+    res.json({ message: 'Posición actualizada correctamente.' });
+  } catch (err) {
+    console.error('Error actualizando posición de tabla:', err);
+    res.status(500).json({ error: 'Error actualizando la posición de la tabla.' });
   }
 };

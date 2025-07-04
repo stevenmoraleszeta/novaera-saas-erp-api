@@ -23,7 +23,6 @@ const pool = require('../config/db');
             UPDATE notifications SET reminder_at = NULL WHERE id = $1
           `, [notif.id]);
 
-          console.log(`🔁 Notificación ${notif.id} duplicada sin reminder.`);
         }
       } catch (error) {
         console.error(' Error al revisar recordatorios:', error);

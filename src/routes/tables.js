@@ -10,5 +10,6 @@ router.delete('/:table_id', tablesController.deleteTable);
 router.get('/exists/name', tablesController.existsTableNameInModule);
 router.get('/', tablesController.getTables);
 router.post('/join', tablesController.getOrCreateJoinTable);
+router.patch('/:table_id/update_tables', tablesController.updateTablePosition);
 
 module.exports = router;

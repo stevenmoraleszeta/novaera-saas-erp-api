@@ -1,9 +1,9 @@
 const pool = require('../config/db');
 
-exports.createTable = async ({ module_id, name, description, original_table_id, foreign_table_id }) => {
+exports.createTable = async ({ module_id, name, description, original_table_id, foreign_table_id, position_num}) => {
   const result = await pool.query(
-    'SELECT crear_tabla_logica($1, $2, $3, $4, $5) AS data',
-    [module_id, name, description, original_table_id, foreign_table_id]
+    'SELECT crear_tabla_logica($1, $2, $3, $4, $5, $6) AS data',
+    [module_id, name, description, original_table_id, foreign_table_id, position_num]
   );
   const response = result.rows[0].data;
 
@@ -30,10 +30,10 @@ exports.getTableById = async (table_id) => {
   return result.rows[0];
 };
 
-exports.updateTable = async ({ table_id, name, description, original_table_id, foreign_table_id }) => {
+exports.updateTable = async ({ table_id, name, description, original_table_id, foreign_table_id, position_num }) => {
   const result = await pool.query(
-    'SELECT actualizar_tabla_logica($1, $2, $3, $4, $5) AS message',
-    [table_id, name, description, original_table_id, foreign_table_id]
+    'SELECT actualizar_tabla_logica($1, $2, $3, $4, $5, $6) AS message',
+    [table_id, name, description, original_table_id, foreign_table_id, position_num]
   );
   return result.rows[0];
 };
@@ -175,4 +175,13 @@ exports.getOrCreateJoinTable = async (tableA_id, tableB_id, forName) => {
   }
 
   return { status: 'created', joinTable };
+
+};
+
+  exports.updateTablePosition = async (table_id, newPosition) => {
+  const result = await pool.query(
+    'SELECT sp_actualizar_posicion_tabla($1, $2)',
+    [table_id, newPosition]
+  );
+  return result;
 };

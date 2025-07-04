@@ -1,9 +1,9 @@
 const pool = require('../config/db');
 
-exports.createRecord = async ({ table_id, record_data }) => {
+exports.createRecord = async ({ table_id, record_data, position_num }) => {
   const result = await pool.query(
-    'SELECT insertar_registro_dinamico($1, $2) AS message',
-    [table_id, record_data]
+    'SELECT insertar_registro_dinamico($1, $2, $3) AS message',
+    [table_id, record_data, position_num]
   );
   return result.rows[0];
 };
@@ -24,10 +24,10 @@ exports.getRecordById = async (record_id) => {
   return result.rows[0];
 };
 
-exports.updateRecord = async ({ record_id, record_data }) => {
+exports.updateRecord = async ({ record_id, recordData, position_num }) => {
   const result = await pool.query(
-    'SELECT actualizar_registro_dinamico($1, $2) AS message',
-    [record_id, record_data]
+    'SELECT actualizar_registro_dinamico($1, $2, $3) AS message',
+    [record_id, recordData, position_num]
   );
   return result.rows[0];
 };
@@ -62,4 +62,14 @@ exports.existsFieldInRecords = async (table_id, field_name) => {
     [table_id, field_name]
   );
   return result.rows[0].exists;
+};
+
+exports.updateRecordPosition = async (record_id, newPosition) => {
+  const cleanRecordId = parseInt(record_id, 10);
+  
+  const result = await pool.query(
+    'SELECT sp_actualizar_posicion_registro($1, $2)',
+    [cleanRecordId, newPosition]
+  );
+  return result;
 };
