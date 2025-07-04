@@ -96,11 +96,11 @@ exports.existsTableNameInModule = async (req, res) => {
 
 exports.getOrCreateJoinTable = async (req, res) => {
   try {
-    const { tableA_id, tableB_id } = req.body;
+    const { tableA_id, tableB_id, forName } = req.body;
     if (!tableA_id || !tableB_id) {
       return res.status(400).json({ error: 'tableA_id y tableB_id son requeridos' });
     }
-    const result = await tablesService.getOrCreateJoinTable(tableA_id, tableB_id);
+    const result = await tablesService.getOrCreateJoinTable(tableA_id, tableB_id, forName);
     res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });

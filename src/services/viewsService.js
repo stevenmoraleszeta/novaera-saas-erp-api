@@ -49,6 +49,7 @@ exports.updateView = async ({ id, name, sort_by, sort_direction }) => {
 };
 
 exports.updateViewColumn = async ({ id, visible, filter_condition, filter_value }) => {
+  console.log("Intenta ", filter_value)
   const result = await pool.query(
     'SELECT sp_actualizar_columna_vista($1, $2, $3, $4) AS message',
     [id, visible, filter_condition, filter_value]

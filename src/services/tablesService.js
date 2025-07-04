@@ -65,7 +65,7 @@ exports.getTables = async () => {
  * @param {number} tableB_id - ID de la tabla foránea.
  * @returns {Promise<{status: 'found'|'created', joinTable: object}>}
  */
-exports.getOrCreateJoinTable = async (tableA_id, tableB_id) => {
+exports.getOrCreateJoinTable = async (tableA_id, tableB_id, forName) => {
   // Buscar si ya existe una tabla intermedia (en cualquier orden)
   const result = await pool.query(
     `SELECT * FROM tables 
@@ -93,11 +93,11 @@ exports.getOrCreateJoinTable = async (tableA_id, tableB_id) => {
       );
     }
     // foreign_record_id -> apunta a tableB
-    if (!(await checkColumnExists(joinTable.id, 'foreign_record_id'))) {
+    if (!(await checkColumnExists(joinTable.id, forName))) {
       await pool.query(
         `INSERT INTO columns (table_id, name, data_type, is_required, is_foreign_key, foreign_table_id, foreign_column_name)
          VALUES ($1, $2, 'select', true, true, $3, $4)`,
-        [joinTable.id, 'foreign_record_id', tableB_id, 'id']
+        [joinTable.id, forName , tableB_id, 'id']
       );
     }
     return { status: 'found', joinTable };
@@ -118,17 +118,16 @@ exports.getOrCreateJoinTable = async (tableA_id, tableB_id) => {
   function normalize(name) {
     return name
       .toLowerCase()
-      .replace(/ /g, '_')
       .replace(/[áéíóúüñ]/g, c => ({
         á: 'a', é: 'e', í: 'i', ó: 'o', ú: 'u', ü: 'u', ñ: 'n'
       }[c] || c))
-      .replace(/[^a-z0-9_]/g, '');
+      .replace(/[^a-z0-9 _]/g, '');
   }
   const normA = normalize(tableA.name);
   const normB = normalize(tableB.name);
   const colA = normA + '_id';
   const colB = normB + '_id';
-  const joinTableName = `mid_${normA}_${normB}`;
+  const joinTableName = `${normA} - ${normB}`;
 
   // Crea la tabla lógica en tu sistema
   const insert = await pool.query(
