@@ -12,6 +12,7 @@ const notificationsRoutes = require('./routes/notifications');
 const authRoutes = require('./routes/auth');
 const authMiddleware = require('./middleware/authMiddleware');
 const viewsRoutes = require('./routes/views');
+const filesRoutes = require('./routes/files');
 
 const app = express();
 
@@ -30,7 +31,9 @@ app.use(cors({
   credentials: true
 }));
 
-app.use(express.json());
+// Aumentar límite para archivos
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser());
 
 app.use('/api/auth', authRoutes); 
@@ -46,5 +49,6 @@ app.use('/api/roles', rolesRoutes);
 app.use('/api/permissions', permissionsRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/views', viewsRoutes);
+app.use('/api/files', filesRoutes);
 
 module.exports = app;

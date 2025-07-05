@@ -1,52 +1,167 @@
 const pool = require('../config/db');
+const filesService = require('./filesService');
 
-exports.createRecord = async ({ table_id, record_data, position_num }) => {
-  const result = await pool.query(
-    'SELECT insertar_registro_dinamico($1, $2, $3) AS message',
-    [table_id, record_data, position_num]
-  );
-  return result.rows[0];
-};
+class RecordsService {
+  // Crear registro
+  async createRecord({ table_id, record_data, position_num }) {
+    try {
+      const result = await pool.query(
+        'SELECT insertar_registro_dinamico($1, $2, $3) AS message',
+        [table_id, record_data, position_num]
+      );
+      return result.rows[0];
+    } catch (error) {
+      throw new Error(`Error al crear registro: ${error.message}`);
+    }
+  }
 
-exports.getRecordsByTable = async (table_id) => {
-  const result = await pool.query(
-    'SELECT * FROM obtener_registros_por_tabla($1)',
-    [table_id]
-  );
-  return result.rows;
-};
+  // Obtener registros por tabla con archivos expandidos
+  async getRecordsByTable(table_id) {
+    try {
+      const result = await pool.query(
+        'SELECT * FROM obtener_registros_por_tabla($1)',
+        [table_id]
+      );
+      
+      // Expandir archivos en cada registro
+      const expandedRecords = await this.expandFileReferences(result.rows);
+      return expandedRecords;
+    } catch (error) {
+      throw new Error(`Error al obtener registros: ${error.message}`);
+    }
+  }
 
-exports.getRecordById = async (record_id) => {
-  const result = await pool.query(
-    'SELECT * FROM obtener_registro_por_id($1)',
-    [record_id]
-  );
-  return result.rows[0];
-};
+  // Obtener registro por ID
+  async getRecordById(record_id) {
+    try {
+      const result = await pool.query(
+        'SELECT * FROM obtener_registro_por_id($1)',
+        [record_id]
+      );
+      
+      if (result.rows.length === 0) {
+        throw new Error('Registro no encontrado');
+      }
+      
+      const expandedRecords = await this.expandFileReferences(result.rows);
+      return expandedRecords[0];
+    } catch (error) {
+      throw new Error(`Error al obtener registro: ${error.message}`);
+    }
+  }
 
-exports.updateRecord = async ({ record_id, recordData, position_num }) => {
-  const result = await pool.query(
-    'SELECT actualizar_registro_dinamico($1, $2, $3) AS message',
-    [record_id, recordData, position_num]
-  );
-  return result.rows[0];
-};
+  // Actualizar registro
+  async updateRecord({ record_id, recordData, position_num }) {
+    try {
+      const result = await pool.query(
+        'SELECT actualizar_registro_dinamico($1, $2, $3) AS message',
+        [record_id, recordData, position_num]
+      );
+      return result.rows[0];
+    } catch (error) {
+      throw new Error(`Error al actualizar registro: ${error.message}`);
+    }
+  }
 
-exports.deleteRecord = async (record_id) => {
-  const result = await pool.query(
-    'SELECT eliminar_registro_dinamico($1) AS message',
-    [record_id]
-  );
-  return result.rows[0];
-};
+  // Eliminar registro
+  async deleteRecord(record_id) {
+    try {
+      const result = await pool.query(
+        'SELECT eliminar_registro_dinamico($1) AS message',
+        [record_id]
+      );
+      return result.rows[0];
+    } catch (error) {
+      throw new Error(`Error al eliminar registro: ${error.message}`);
+    }
+  }
 
-exports.searchRecordsByValue = async (table_id, value) => {
-  const result = await pool.query(
-    'SELECT * FROM buscar_registros_por_valor($1, $2)',
-    [table_id, value]
-  );
-  return result.rows;
-};
+  // Buscar registros por valor
+  async searchRecordsByValue(table_id, value) {
+    try {
+      const result = await pool.query(
+        'SELECT * FROM buscar_registros_por_valor($1, $2)',
+        [table_id, value]
+      );
+      
+      const expandedRecords = await this.expandFileReferences(result.rows);
+      return expandedRecords;
+    } catch (error) {
+      throw new Error(`Error al buscar registros: ${error.message}`);
+    }
+  }
+
+  // Expandir referencias de archivos
+  async expandFileReferences(records) {
+    const expandedRecords = [];
+    
+    for (const record of records) {
+      const expandedRecord = { ...record };
+      
+      if (record.record_data) {
+        expandedRecord.record_data = await this.expandFiles(record.record_data);
+      }
+      
+      expandedRecords.push(expandedRecord);
+    }
+    
+    return expandedRecords;
+  }
+
+  // Expandir archivos en el JSON
+  async expandFiles(recordData) {
+    const expanded = { ...recordData };
+    
+    for (const [key, value] of Object.entries(expanded)) {
+      if (value && typeof value === 'object') {
+        // Archivo individual
+        if (value.file_id) {
+          const fileInfo = await filesService.getFileInfo(value.file_id);
+          if (fileInfo) {
+            expanded[key] = {
+              ...value,
+              ...fileInfo,
+              download_url: `/api/files/download/${value.file_id}`,
+              view_url: `/api/files/view/${value.file_id}`
+            };
+          }
+        }
+        // Array de archivos
+        else if (Array.isArray(value)) {
+          const expandedArray = [];
+          for (const item of value) {
+            if (item && item.file_id) {
+              const fileInfo = await filesService.getFileInfo(item.file_id);
+              if (fileInfo) {
+                expandedArray.push({
+                  ...item,
+                  ...fileInfo,
+                  download_url: `/api/files/download/${item.file_id}`,
+                  view_url: `/api/files/view/${item.file_id}`
+                });
+              }
+            } else {
+              expandedArray.push(item);
+            }
+          }
+          expanded[key] = expandedArray;
+        }
+      }
+    }
+    
+    return expanded;
+  }
+}
+
+// Mantener compatibilidad con la exportación anterior
+const recordsService = new RecordsService();
+
+exports.createRecord = recordsService.createRecord.bind(recordsService);
+exports.getRecordsByTable = recordsService.getRecordsByTable.bind(recordsService);
+exports.getRecordById = recordsService.getRecordById.bind(recordsService);
+exports.updateRecord = recordsService.updateRecord.bind(recordsService);
+exports.deleteRecord = recordsService.deleteRecord.bind(recordsService);
+exports.searchRecordsByValue = recordsService.searchRecordsByValue.bind(recordsService);
 
 exports.countRecordsByTable = async (table_id) => {
   const result = await pool.query(
