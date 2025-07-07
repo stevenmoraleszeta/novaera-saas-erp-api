@@ -114,3 +114,17 @@ exports.updateViewPosition = async (req, res) => {
     res.status(500).json({ error: 'Error actualizando la posición de la vista.' });
   }
 };
+
+  exports.deleteViewColumn = async (req, res) => {
+    try {
+      const { id } = req.params; // ← este es el id del view_column
+
+      const result = await viewService.deleteViewColumn(id);
+      res.json({ message: 'Columna eliminada de la vista correctamente.', result });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  };
+
+
+

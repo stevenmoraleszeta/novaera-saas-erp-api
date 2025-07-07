@@ -58,10 +58,21 @@ exports.updateViewColumn = async ({ id, visible, filter_condition, filter_value 
 
 
 exports.updateViewPosition = async (view_id, newPosition) => {
-    const cleanRecordId = parseInt(view_id, 10);
+  const cleanRecordId = parseInt(view_id, 10);
   const result = await pool.query(
     'SELECT sp_actualizar_posicion_vistas($1, $2)',
     [cleanRecordId, newPosition]
   );
   return result;
 };
+
+
+exports.deleteViewColumn = async (id) => {
+  const result = await pool.query(
+    `SELECT sp_eliminar_columna_vista($1) AS message`,
+    [id]
+  );
+
+  return result.rows[0]; // o result.rows[0].message si solo querés el texto
+};
+
