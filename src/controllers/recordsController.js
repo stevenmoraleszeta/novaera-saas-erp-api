@@ -42,8 +42,22 @@ exports.getRecordById = async (req, res) => {
 exports.updateRecord = async (req, res) => {
   try {
     const { record_id } = req.params;
-    const  { recordData, position_num }  = req.body;
-    const result = await recordsService.updateRecord({ record_id, recordData, position_num });
+    const { recordData, position_num } = req.body;
+    
+    // Obtener información del usuario desde el token de autenticación
+    const updatedBy = req.user?.id || null;
+    const ipAddress = req.ip || req.connection.remoteAddress;
+    const userAgent = req.get('User-Agent');
+    
+    const result = await recordsService.updateRecord({ 
+      record_id, 
+      recordData, 
+      position_num, 
+      updatedBy, 
+      ipAddress, 
+      userAgent 
+    });
+    
     res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -53,7 +67,13 @@ exports.updateRecord = async (req, res) => {
 exports.deleteRecord = async (req, res) => {
   try {
     const { record_id } = req.params;
-    const result = await recordsService.deleteRecord(record_id);
+    
+    // Obtener información del usuario desde el token de autenticación
+    const deletedBy = req.user?.id || null;
+    const ipAddress = req.ip || req.connection.remoteAddress;
+    const userAgent = req.get('User-Agent');
+    
+    const result = await recordsService.deleteRecord(record_id, deletedBy, ipAddress, userAgent);
     res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });

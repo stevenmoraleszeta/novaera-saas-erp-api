@@ -13,6 +13,8 @@ const authRoutes = require('./routes/auth');
 const authMiddleware = require('./middleware/authMiddleware');
 const viewsRoutes = require('./routes/views');
 const filesRoutes = require('./routes/files');
+const scheduledNotificationsRoutes = require('./routes/scheduledNotifications');
+const recordAssignedUsersRoutes = require('./routes/recordAssignedUsers');
 
 const app = express();
 
@@ -50,5 +52,7 @@ app.use('/api/permissions', permissionsRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/views', viewsRoutes);
 app.use('/api/files', filesRoutes);
+app.use('/api/scheduled-notifications', scheduledNotificationsRoutes);
+app.use('/api/record-assigned-users', recordAssignedUsersRoutes);
 
 module.exports = app;
