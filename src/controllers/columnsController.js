@@ -1,4 +1,5 @@
 const columnsService = require('../services/columnsService');
+const columnOptionsService = require('../services/columnOptionsService');
 
 exports.getColumns = async (req, res) => {
   try {
@@ -11,10 +12,35 @@ exports.getColumns = async (req, res) => {
 
 exports.createColumn = async (req, res) => {
   try {
-    const columnData = req.body;
+    const { custom_options, ...columnData } = req.body;
+    
+    console.log('Creating column with data:', columnData);
+    console.log('Custom options:', custom_options);
+    
+    // Crear la columna primero
     const result = await columnsService.createColumn(columnData);
+    console.log('Column creation result:', result);
+    
+    // El procedimiento almacenado ahora devuelve el ID de la columna creada
+    const newColumnId = result.column_id;
+    
+    // Si es una columna de tipo selección con opciones personalizadas
+    if (columnData.data_type === 'select' && custom_options && Array.isArray(custom_options) && custom_options.length > 0) {
+      console.log('Processing custom options for select column');
+      
+      if (newColumnId) {
+        console.log('Creating custom options for column ID:', newColumnId);
+        // Crear las opciones personalizadas
+        await columnOptionsService.createColumnOptions(newColumnId, custom_options);
+        console.log('Custom options created successfully');
+      } else {
+        console.log('Error: Could not get newly created column ID');
+      }
+    }
+    
     res.status(201).json(result);
   } catch (err) {
+    console.error('Error in createColumn:', err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -42,12 +68,19 @@ exports.getColumnById = async (req, res) => {
 exports.updateColumn = async (req, res) => {
   try {
     const { column_id } = req.params;
-    const { name, data_type, is_required, is_foreign_key, foreign_table_id, foreign_column_name, column_position, relation_type, validations } = req.body;
+    const { custom_options, name, data_type, is_required, is_foreign_key, foreign_table_id, foreign_column_name, column_position, relation_type, validations } = req.body;
     const currentColumn = await columnsService.getColumnById(column_id);
   
     const oldName = currentColumn.name;
 
     const result = await columnsService.updateColumn({ column_id, name, data_type, is_required, is_foreign_key, foreign_table_id, foreign_column_name, column_position, relation_type, validations });
+    
+    // Si es una columna de tipo selección con opciones personalizadas
+    if (data_type === 'select' && custom_options && Array.isArray(custom_options)) {
+      // Actualizar las opciones personalizadas
+      await columnOptionsService.createColumnOptions(column_id, custom_options);
+    }
+    
     if (oldName !== name) {
     const tableId = currentColumn.table_id;
       await columnsService.renameColumnKeyInRecords({
@@ -56,7 +89,6 @@ exports.updateColumn = async (req, res) => {
         newKey: name
       });
     }
-
 
     res.json(result);
   } catch (err) {
@@ -110,5 +142,25 @@ exports.updateColumnPosition = async (req, res) => {
   } catch (err) {
     console.error('Error actualizando posición de columna:', err);
     res.status(500).json({ error: 'Error actualizando la posición de la columna.' });
+  }
+};
+
+// Obtener columnas de una tabla con sus opciones personalizadas
+exports.getColumnsByTableWithOptions = async (req, res) => {
+  try {
+    const { table_id } = req.params;
+    const columns = await columnsService.getColumnsByTable(table_id);
+    
+    // Para cada columna de tipo selección, obtener sus opciones personalizadas
+    for (let column of columns) {
+      if (column.data_type === 'select') {
+        const customOptions = await columnOptionsService.getColumnOptions(column.column_id);
+        column.custom_options = customOptions;
+      }
+    }
+    
+    res.json(columns);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };

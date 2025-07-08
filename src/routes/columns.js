@@ -5,6 +5,7 @@ const columnsController = require('../controllers/columnsController');
 router.get('/', columnsController.getColumns);
 router.post('/', columnsController.createColumn);
 router.get('/table/:table_id', columnsController.getColumnsByTable);
+router.get('/table/:table_id/with-options', columnsController.getColumnsByTableWithOptions);
 router.get('/:column_id', columnsController.getColumnById);
 router.put('/:column_id', columnsController.updateColumn);
 router.delete('/:column_id', columnsController.deleteColumn);
