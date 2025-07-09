@@ -16,10 +16,10 @@ exports.getViewsByTable = async (table_id) => {
   return result.rows;
 };
 
-exports.addColumnToView = async ({ view_id, column_id, visible = true, filter_condition = null, filter_value = null }) => {
+exports.addColumnToView = async ({ view_id, column_id, visible = true, filter_condition = null, filter_value = null, position_num }) => {
   const result = await pool.query(
-    'SELECT sp_agregar_columnas_a_vista($1, $2, $3, $4, $5) AS message',
-    [view_id, column_id, visible, filter_condition, filter_value]
+    'SELECT sp_agregar_columnas_a_vista($1, $2, $3, $4, $5, $6) AS message',
+    [view_id, column_id, visible, filter_condition, filter_value, position_num]
   );
   return result.rows[0];
 };
@@ -48,10 +48,10 @@ exports.updateView = async ({ id, name, sort_by, sort_direction, position_num })
   return result.rows[0];
 };
 
-exports.updateViewColumn = async ({ id, visible, filter_condition, filter_value }) => {
+exports.updateViewColumn = async ({ id, visible, filter_condition, filter_value, position_num }) => {
   const result = await pool.query(
-    'SELECT sp_actualizar_columna_vista($1, $2, $3, $4) AS message',
-    [id, visible, filter_condition, filter_value]
+    'SELECT sp_actualizar_columna_vista($1, $2, $3, $4, $5) AS message',
+    [id, visible, filter_condition, filter_value, position_num]
   );
   return result.rows[0];
 };
@@ -65,6 +65,16 @@ exports.updateViewPosition = async (view_id, newPosition) => {
   );
   return result;
 };
+
+exports.updateViewColumnPosition = async (view_id, newPosition) => {
+  const cleanRecordId = parseInt(view_id, 10);
+  const result = await pool.query(
+    'SELECT sp_actualizar_posicion_view_column($1, $2)',
+    [cleanRecordId, newPosition]
+  );
+  return result;
+};
+
 
 
 exports.deleteViewColumn = async (id) => {

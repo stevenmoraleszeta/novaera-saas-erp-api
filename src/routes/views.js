@@ -11,5 +11,6 @@ router.put('/:id', viewsController.updateView);
 router.put('/columns/:id', viewsController.updateViewColumn);
 router.patch('/:id/update_views', viewsController.updateViewPosition);
 router.delete('/columns/:id', viewsController.deleteViewColumn);
+router.patch('/:id/update_view_columns', viewsController.updateViewColumnPosition);
 
 module.exports = router;

@@ -33,7 +33,7 @@ exports.createView = async (req, res) => {
 
 exports.addColumnToView = async (req, res) => {
   try {
-    const { view_id, column_id, visible, filter_condition, filter_value } = req.body;
+    const { view_id, column_id, visible, filter_condition, filter_value, position_num } = req.body;
 
     const result = await viewService.addColumnToView({
       view_id,
@@ -41,6 +41,7 @@ exports.addColumnToView = async (req, res) => {
       visible,
       filter_condition,
       filter_value,
+      position_num
     });
 
     res.status(201).json(result);
@@ -112,6 +113,25 @@ exports.updateViewPosition = async (req, res) => {
   } catch (err) {
     console.error('Error actualizando posición de vista:', err);
     res.status(500).json({ error: 'Error actualizando la posición de la vista.' });
+  }
+};
+
+exports.updateViewColumnPosition = async (req, res) => {
+
+  try {
+    const { id } = req.params;
+    const { position } = req.body;
+
+    if (position === undefined || isNaN(position)) {
+      return res.status(400).json({ error: 'La nueva posición es requerida y debe ser un número.' });
+    }
+
+    await viewService.updateViewColumnPosition(id, Number(position));
+
+    res.json({ message: 'Posición actualizada correctamente.' });
+  } catch (err) {
+    console.error('Error actualizando posición de column view:', err);
+    res.status(500).json({ error: 'Error actualizando la posición de la view_column.' });
   }
 };
 
