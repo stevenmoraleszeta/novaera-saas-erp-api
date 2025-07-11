@@ -97,21 +97,17 @@ exports.getAvailableOptions = async (column_id) => {
     return [];
   }
   
-  // Primero verificar si tiene opciones personalizadas
-  const customOptions = await this.getColumnOptions(column_id);
+  console.log('Processing column:', {
+    column_id: column.id,
+    data_type: column.data_type,
+    is_foreign_key: column.is_foreign_key,
+    foreign_table_id: column.foreign_table_id,
+    foreign_column_name: column.foreign_column_name
+  });
   
-  // Si tiene opciones personalizadas, retornarlas
-  if (customOptions.length > 0) {
-    return customOptions.map(option => ({
-      value: option.option_value,
-      label: option.option_label,
-      type: 'custom'
-    }));
-  }
-  
-  // Si no tiene opciones personalizadas y tiene tabla foránea, obtener opciones de la tabla
-  if (column.foreign_table_id && column.foreign_column_name) {
-    console.log(`Getting options from table ${column.foreign_table_id}, column ${column.foreign_column_name}`);
+  // Si es una columna de foreign key, obtener opciones de la tabla referenciada
+  if (column.is_foreign_key && column.foreign_table_id && column.foreign_column_name) {
+    console.log(`Getting options from foreign table ${column.foreign_table_id}, column ${column.foreign_column_name}`);
     
     const tableResult = await pool.query(
       'SELECT id, record_data FROM records WHERE table_id = $1 AND record_data ? $2 ORDER BY id',
@@ -126,11 +122,23 @@ exports.getAvailableOptions = async (column_id) => {
       .map(record => ({
         value: record.id,
         label: record.record_data[column.foreign_column_name],
-        type: 'table'
+        type: 'foreign'
       }));
       
     console.log(`Found ${options.length} options from foreign table:`, options);
     return options;
+  }
+  
+  // Si no es foreign key, verificar si tiene opciones personalizadas
+  const customOptions = await this.getColumnOptions(column_id);
+  
+  // Si tiene opciones personalizadas, retornarlas
+  if (customOptions.length > 0) {
+    return customOptions.map(option => ({
+      value: option.option_value,
+      label: option.option_label,
+      type: 'custom'
+    }));
   }
   
   return [];
