@@ -7,9 +7,6 @@ exports.createColumnOptions = async (column_id, options) => {
   try {
     await client.query('BEGIN');
     
-    // Eliminar opciones existentes
-    await client.query('DELETE FROM column_options WHERE column_id = $1', [column_id]);
-    
     // Insertar nuevas opciones
     if (options && options.length > 0) {
       for (let i = 0; i < options.length; i++) {
