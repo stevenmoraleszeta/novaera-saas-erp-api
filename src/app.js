@@ -16,6 +16,7 @@ const filesRoutes = require('./routes/files');
 const scheduledNotificationsRoutes = require('./routes/scheduledNotifications');
 const recordAssignedUsersRoutes = require('./routes/recordAssignedUsers');
 const columnOptionsRoutes = require('./routes/columnOptions');
+const viewSortRoutes = require('./routes/viewSortRoutes');
 
 const app = express();
 
@@ -56,5 +57,6 @@ app.use('/api/files', filesRoutes);
 app.use('/api/scheduled-notifications', scheduledNotificationsRoutes);
 app.use('/api/record-assigned-users', recordAssignedUsersRoutes);
 app.use('/api', columnOptionsRoutes);
+app.use('/api/view-sorts', viewSortRoutes);
 
 module.exports = app;
