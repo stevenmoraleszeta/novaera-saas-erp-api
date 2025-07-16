@@ -13,35 +13,40 @@ exports.getColumns = async (req, res) => {
 exports.createColumn = async (req, res) => {
   try {
     const { custom_options, ...columnData } = req.body;
-    
-    console.log('Creating column with data:', columnData);
+    console.log('---[CREATE COLUMN]---');
+    console.log('Column data:', columnData);
     console.log('Custom options:', custom_options);
-    
+
     // Crear la columna primero
     const result = await columnsService.createColumn(columnData);
     console.log('Column creation result:', result);
-    
+
     // El procedimiento almacenado ahora devuelve el ID de la columna creada
     const newColumnId = result.column_id;
-    
+
     // Si es una columna de tipo selección con opciones personalizadas
     if (columnData.data_type === 'select' && custom_options && Array.isArray(custom_options) && custom_options.length > 0) {
       console.log('Processing custom options for select column');
-      
       if (newColumnId) {
         console.log('Creating custom options for column ID:', newColumnId);
-        // Crear las opciones personalizadas
-        await columnOptionsService.createColumnOptions(newColumnId, custom_options);
-        console.log('Custom options created successfully');
+        try {
+          await columnOptionsService.createColumnOptions(newColumnId, custom_options);
+          console.log('Custom options created successfully');
+        } catch (optErr) {
+          console.error('Error creating custom options:', optErr);
+          // Enviar error específico de opciones personalizadas
+          return res.status(500).json({ error: 'Error al crear opciones personalizadas', details: optErr.message });
+        }
       } else {
         console.log('Error: Could not get newly created column ID');
+        return res.status(500).json({ error: 'No se pudo obtener el ID de la columna creada' });
       }
     }
-    
+
     res.status(201).json(result);
   } catch (err) {
     console.error('Error in createColumn:', err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message, stack: err.stack });
   }
 };
 

@@ -7,9 +7,6 @@ exports.createColumnOptions = async (column_id, options) => {
   try {
     await client.query('BEGIN');
     
-    // Eliminar opciones existentes
-    await client.query('DELETE FROM column_options WHERE column_id = $1', [column_id]);
-    
     // Insertar nuevas opciones
     if (options && options.length > 0) {
       for (let i = 0; i < options.length; i++) {
@@ -106,7 +103,7 @@ exports.getAvailableOptions = async (column_id) => {
   });
   
   // Si es una columna de foreign key, obtener opciones de la tabla referenciada
-  if (column.is_foreign_key && column.foreign_table_id && column.foreign_column_name) {
+  if (column.foreign_table_id && column.foreign_column_name) {
     console.log(`Getting options from foreign table ${column.foreign_table_id}, column ${column.foreign_column_name}`);
     
     const tableResult = await pool.query(
