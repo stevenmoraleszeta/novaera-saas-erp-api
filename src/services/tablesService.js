@@ -209,18 +209,8 @@ exports.getOrCreateJoinTable = async (tableA_id, tableB_id, displayColumn) => {
   );
   const joinTable = insert.rows[0];
 
-  // Crea la tabla física en la base de datos (si aplica)
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS ${physicalTableName} (
-      id SERIAL PRIMARY KEY,
-      original_record_id INT NOT NULL,
-      foreign_record_id INT NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
+  
 
-  // Después de crear la tabla lógica y física, repite la lógica de creación de columnas
-  // Helper para verificar si existe la columna lógica
   async function checkColumnExists(tableId, columnName) {
     const res = await pool.query(
       `SELECT 1 FROM columns WHERE table_id = $1 AND name = $2`,
