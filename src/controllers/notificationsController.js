@@ -70,7 +70,22 @@ exports.deleteAllNotifications = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
+exports.deactivateGeneral = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await notificationsService.deactivateGeneralNotification(id);
+    res.json({
+      success: true,
+        message: 'Notificación general desactivada exitosamente'
+      });
+    } catch (error) {
+      console.error('Error desactivando notificación general:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Error al desactivar la notificación general'
+      });
+    }
+  }
 exports.countUnread = async (req, res) => {
   try {
     const { user_id } = req.params;

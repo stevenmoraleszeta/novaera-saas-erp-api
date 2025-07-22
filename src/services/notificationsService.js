@@ -1,3 +1,4 @@
+
 const pool = require('../config/db');
 
     async function checkReminders() {
@@ -94,7 +95,13 @@ exports.deleteAllNotifications = async (user_id) => {
   );
   return result.rows[0];
 };
-
+exports.deactivateGeneralNotification = async (id) => {
+  await pool.query(
+    'UPDATE notifications SET is_active = false WHERE id = $1',
+    [id]
+  );
+  return true;
+};
 exports.countUnread = async (user_id) => {
   const result = await pool.query(
     'SELECT contar_notificaciones_no_leidas($1) AS count',

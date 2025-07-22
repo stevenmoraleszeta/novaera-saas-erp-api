@@ -1,3 +1,7 @@
+  // Desactivar notificación normal (soft delete)
+  
+  
+
 const scheduledNotificationsService = require('../services/scheduledNotificationsService');
 
 class ScheduledNotificationsController {
@@ -77,6 +81,39 @@ class ScheduledNotificationsController {
     }
   }
 
+  async deactivate(req, res) {
+    try {
+      const { id } = req.params;
+      await scheduledNotificationsService.deactivateScheduledNotification(id);
+      res.json({
+        success: true,
+        message: 'Notificación desactivada exitosamente'
+      });
+    } catch (error) {
+      console.error('Error deactivando notificación:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Error al desactivar la notificación'
+      });
+    }
+  }
+
+  // Desactivar todas las notificaciones (scheduled y generales)
+  async deactivateAll(req, res) {
+    try {
+      await scheduledNotificationsService.deactivateAllNotifications();
+      res.json({
+        success: true,
+        message: 'Todas las notificaciones han sido desactivadas'
+      });
+    } catch (error) {
+      console.error('Error desactivando todas las notificaciones:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Error al desactivar todas las notificaciones'
+      });
+    }
+  }
   // Obtener estadísticas de notificaciones
   async getStats(req, res) {
     try {

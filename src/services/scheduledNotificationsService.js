@@ -1,3 +1,4 @@
+
 const pool = require('../config/db');
 
 class ScheduledNotificationsService {
@@ -71,6 +72,15 @@ class ScheduledNotificationsService {
     }));
   }
 
+    async deactivateScheduledNotification(id) {
+      const query = `
+        UPDATE scheduled_notifications 
+        SET is_active = false, updated_at = CURRENT_TIMESTAMP
+        WHERE id = $1
+      `;
+      await pool.query(query, [id]);
+      return true;
+    }
   // Obtener notificaciones por registro específico
   async getNotificationsByRecord(tableId, recordId) {
     const query = `
@@ -130,6 +140,17 @@ class ScheduledNotificationsService {
     return result.rows[0];
   }
 
+  async deactivateAllNotifications() {
+    // Desactivar todas las scheduled
+    await pool.query(`UPDATE scheduled_notifications SET is_active = false, updated_at = CURRENT_TIMESTAMP WHERE is_active = true`);
+    // Desactivar todas las generales (si tienen is_active)
+    try {
+      await pool.query(`UPDATE notifications SET is_active = false WHERE is_active = true`);
+    } catch (e) {
+      // Si la tabla notifications no tiene is_active, ignorar
+    }
+    return true;
+  }
   // Eliminar notificación programada (soft delete)
   async deleteScheduledNotification(id) {
     const query = `

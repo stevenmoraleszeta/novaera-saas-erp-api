@@ -11,5 +11,6 @@ router.delete('/:notification_id', notificationsController.deleteNotification);
 router.delete('/user/:user_id', notificationsController.deleteAllNotifications);
 router.get('/user/:user_id/unread-count', notificationsController.countUnread);
 router.post('/massive', notificationsController.createMassiveNotifications);
+router.put('/general/:id/deactivate', notificationsController.deactivateGeneral);
 
 module.exports = router;

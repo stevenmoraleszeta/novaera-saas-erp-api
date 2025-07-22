@@ -1,6 +1,8 @@
+// Endpoint para desactivar (soft delete) una notificación normal
 const express = require('express');
 const router = express.Router();
 const scheduledNotificationsController = require('../controllers/scheduledNotificationsController');
+
 
 // Rutas para notificaciones programadas
 router.post('/', scheduledNotificationsController.create);
@@ -15,6 +17,10 @@ router.get('/date-columns/:tableId', scheduledNotificationsController.getDateCol
 router.put('/:notificationId/read', scheduledNotificationsController.markScheduledNotificationAsRead);
 router.put('/:id', scheduledNotificationsController.update);
 router.delete('/:id', scheduledNotificationsController.delete);
+
+// Endpoint para desactivar (soft delete) una notificación programada
+router.put('/:id/deactivate', scheduledNotificationsController.deactivate);
+router.put('/deactivate/all', scheduledNotificationsController.deactivateAll);
 
 // Rutas para suscripciones
 router.post('/subscriptions', scheduledNotificationsController.subscribe);
