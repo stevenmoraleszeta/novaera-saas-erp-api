@@ -9,7 +9,7 @@ exports.getRoles = async () => {
 exports.createRole = async ({ name }) => {
   // Solo acepta nombre, establece active = true por defecto
   const result = await pool.query(
-    'INSERT INTO roles (name, active) VALUES ($1, true) RETURNING *', 
+    'INSERT INTO roles (name, active) VALUES ($1, true) RETURNING *',
     [name]
   );
   return result.rows[0];
@@ -21,6 +21,18 @@ exports.getRoleById = async (id) => {
   return result.rows[0];
 };
 
+exports.updateRole = async (
+  id,
+  { name = null, description = null, is_admin = null }
+) => {
+  const result = await pool.query(
+    'SELECT actualizar_rol($1, $2, $3, $4) AS message',
+    [id, name, description, is_admin]
+  );
+  return result.rows[0];
+};
+
+/*
 exports.updateRole = async (id, { name }) => {
   // Actualiza solo el nombre si el rol está activo
   const result = await pool.query(
@@ -28,12 +40,12 @@ exports.updateRole = async (id, { name }) => {
     [name, id]
   );
   return result.rows[0];
-};
+}; */
 
 exports.deleteRole = async (id) => {
   // Eliminación lógica - cambiar active a false en lugar de eliminar físicamente
   const result = await pool.query(
-    'UPDATE roles SET active = false WHERE id = $1 AND active = true RETURNING *', 
+    'UPDATE roles SET active = false WHERE id = $1 AND active = true RETURNING *',
     [id]
   );
   if (result.rows.length === 0) {

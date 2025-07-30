@@ -29,11 +29,34 @@ exports.getRoleById = async (req, res) => {
   }
 };
 
+/*
+
 exports.updateRole = async (req, res) => {
   try {
     const { id } = req.params;
     const { name, description } = req.body;
     const updated = await rolesService.updateRole(id, { name, description });
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}; */
+
+exports.updateRole = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      name = null,
+      description = null,
+      is_admin = null,
+    } = req.body;
+
+    const updated = await rolesService.updateRole(id, {
+      name,
+      description,
+      is_admin
+    });
+
     res.json(updated);
   } catch (err) {
     res.status(500).json({ error: err.message });
