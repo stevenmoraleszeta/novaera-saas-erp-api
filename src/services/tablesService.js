@@ -82,17 +82,9 @@ exports.getTables = async () => {
  * @returns {Promise<{status: 'found'|'created', joinTable: object}>}
  */
 exports.getOrCreateJoinTable = async (tableA_id, tableB_id, displayColumn) => {
-  console.log('getOrCreateJoinTable called with:', {
-    tableA_id,
-    tableB_id, 
-    displayColumn
-  });
-  
   // Si no se proporciona displayColumn, buscar en la columna original que generó esta relación
   let actualDisplayColumn = displayColumn;
   if (!actualDisplayColumn) {
-    console.log('No displayColumn provided, searching for original foreign key column...');
-    
     // Buscar la columna de tipo "foreign" que referencia estas tablas
     const originalColumnResult = await pool.query(`
       SELECT foreign_column_name 
@@ -107,14 +99,10 @@ exports.getOrCreateJoinTable = async (tableA_id, tableB_id, displayColumn) => {
     
     if (originalColumnResult.rows.length > 0) {
       actualDisplayColumn = originalColumnResult.rows[0].foreign_column_name;
-      console.log(`Found original foreign_column_name: "${actualDisplayColumn}"`);
     } else {
-      console.log('No original foreign column found, using "id" as default');
       actualDisplayColumn = 'id';
     }
   }
-  
-  console.log(`Using displayColumn: "${actualDisplayColumn}"`);
   
   // Buscar si ya existe una tabla intermedia (en cualquier orden)
   const result = await pool.query(
@@ -144,7 +132,6 @@ exports.getOrCreateJoinTable = async (tableA_id, tableB_id, displayColumn) => {
     }
     // Columna para la tabla foránea -> usa la columna especificada por el usuario
     if (!(await checkColumnExists(joinTable.id, 'foreign_record_id'))) {
-      console.log(`Creating foreign column: foreign_record_id referencing table ${tableB_id}, column ${actualDisplayColumn}`);
       await pool.query(
         `INSERT INTO columns (table_id, name, data_type, is_required, is_foreign_key, foreign_table_id, foreign_column_name)
          VALUES ($1, $2, 'select', true, true, $3, $4)`,
@@ -161,7 +148,6 @@ exports.getOrCreateJoinTable = async (tableA_id, tableB_id, displayColumn) => {
         const currentForeignColumn = existingColumn.rows[0].foreign_column_name;
         
         if (currentForeignColumn !== actualDisplayColumn) {
-          console.log(`Updating foreign_column_name from '${currentForeignColumn}' to '${actualDisplayColumn}' for existing column`);
           await pool.query(
             `UPDATE columns SET foreign_column_name = $1 WHERE table_id = $2 AND name = $3`,
             [actualDisplayColumn, joinTable.id, 'foreign_record_id']
@@ -228,7 +214,6 @@ exports.getOrCreateJoinTable = async (tableA_id, tableB_id, displayColumn) => {
   }
   // Columna para la tabla foránea -> usa la columna especificada por el usuario
   if (!(await checkColumnExists(joinTable.id, 'foreign_record_id'))) {
-    console.log(`Creating foreign column for new table: foreign_record_id referencing table ${tableB_id}, column ${actualDisplayColumn}`);
     await pool.query(
       `INSERT INTO columns (table_id, name, data_type, is_required, is_foreign_key, foreign_table_id, foreign_column_name)
        VALUES ($1, $2, 'select', true, true, $3, $4)`,
@@ -245,7 +230,6 @@ exports.getOrCreateJoinTable = async (tableA_id, tableB_id, displayColumn) => {
       const currentForeignColumn = existingColumn.rows[0].foreign_column_name;
       
       if (currentForeignColumn !== actualDisplayColumn) {
-        console.log(`Updating foreign_column_name from '${currentForeignColumn}' to '${actualDisplayColumn}' for new table column`);
         await pool.query(
           `UPDATE columns SET foreign_column_name = $1 WHERE table_id = $2 AND name = $3`,
           [actualDisplayColumn, joinTable.id, 'foreign_record_id']

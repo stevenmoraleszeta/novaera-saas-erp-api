@@ -51,24 +51,13 @@ function normalizeDatabaseUrl(url) {
       // Render Internal URLs don't include region, so we'll try common ones
       // Most Render databases use oregon-postgres.render.com
       urlObj.hostname = `${originalHostname}.oregon-postgres.render.com`;
-      
-      console.log('🔧 Auto-completing Render Internal Database URL:');
-      console.log('  Original hostname:', originalHostname);
-      console.log('  Completed hostname:', urlObj.hostname);
       wasModified = true;
     }
     
     // Ensure port is set (default PostgreSQL port is 5432)
     if (!urlObj.port) {
       urlObj.port = '5432';
-      if (!wasModified) {
-        console.log('⚠️  DATABASE_URL missing port, adding default port 5432');
-      }
       wasModified = true;
-    }
-    
-    if (wasModified) {
-      console.log('✅ DATABASE_URL normalized successfully');
     }
     
     return urlObj.toString();
@@ -79,27 +68,10 @@ function normalizeDatabaseUrl(url) {
   }
 }
 
-// Debug: Log which connection method is being used
-console.log('🔍 Database Configuration Debug:');
-console.log('  DATABASE_URL exists:', !!process.env.DATABASE_URL);
-if (process.env.DATABASE_URL) {
-  // Mask password in logs
-  const maskedUrl = process.env.DATABASE_URL.replace(/:([^:@]+)@/, ':****@');
-  console.log('  DATABASE_URL (masked):', maskedUrl);
-}
-console.log('  NODE_ENV:', process.env.NODE_ENV);
-console.log('  DB_HOST:', process.env.DB_HOST);
-console.log('  DB_SSL:', process.env.DB_SSL);
-
 if (process.env.DATABASE_URL) {
   // Use DATABASE_URL if provided (Render, Railway, Heroku, etc.)
-  console.log('✅ Using DATABASE_URL for connection');
-  
   // Normalize the DATABASE_URL
   const normalizedUrl = normalizeDatabaseUrl(process.env.DATABASE_URL);
-  if (normalizedUrl !== process.env.DATABASE_URL) {
-    console.log('  Normalized DATABASE_URL (masked):', normalizedUrl.replace(/:([^:@]+)@/, ':****@'));
-  }
   
   // For Render, always use SSL when DATABASE_URL is provided
   const renderSslConfig = process.env.DB_SSL === 'disable' 
@@ -109,8 +81,6 @@ if (process.env.DATABASE_URL) {
         // Allow self-signed certificates for Render
         checkServerIdentity: () => undefined
       };
-  
-  console.log('  SSL enabled:', !!renderSslConfig);
   
   poolConfig = {
     connectionString: normalizedUrl,
@@ -124,10 +94,6 @@ if (process.env.DATABASE_URL) {
   };
 } else {
   // Use individual connection parameters
-  console.log('⚠️  Using individual DB parameters (DATABASE_URL not found)');
-  console.log('  Host:', process.env.DB_HOST || 'localhost');
-  console.log('  Port:', process.env.DB_PORT || 5432);
-  console.log('  Database:', process.env.DB_NAME);
   
   poolConfig = {
     host: process.env.DB_HOST || 'localhost',
@@ -163,35 +129,19 @@ const testConnection = async (maxRetries = 3) => {
       const client = await pool.connect();
       await client.query('SELECT 1');
       client.release();
-      console.log('Database connection successful');
       return true;
     } catch (error) {
       lastError = error;
-      console.log(`Database connection attempt ${i + 1} failed:`);
-      console.log('  Error code:', error.code);
-      console.log('  Error message:', error.message);
-      if (error.address) console.log('  Address:', error.address);
-      if (error.port) console.log('  Port:', error.port);
       
-      // Log full error details on last attempt
+      // Log error details only on last attempt
       if (i === maxRetries - 1) {
-        console.error('  Full error details:', JSON.stringify({
-          code: error.code,
-          errno: error.errno,
-          syscall: error.syscall,
-          address: error.address,
-          port: error.port,
-          message: error.message
-        }, null, 2));
+        console.error(`Database connection failed after ${maxRetries} attempts:`, error.message);
       }
       
       // If it's an SSL/TLS error, try to adjust configuration
       if (error.message.includes('SSL') || error.message.includes('TLS') || error.message.includes('ECONNRESET')) {
-        console.log('Detected SSL/TLS error. Adjusting SSL configuration...');
-        
         // Try with SSL enabled if not already
         if (!sslConfig) {
-          console.log('Retrying with SSL enabled...');
           pool.options.ssl = { rejectUnauthorized: false };
         }
       }
@@ -236,13 +186,9 @@ testConnection().then(success => {
 // Test the connection (keeping the old method as fallback)
 pool.connect((err, client, release) => {
   if (err) {
-    console.error('Error connecting to database:', err);
-    if (err.message.includes('SSL')) {
-      console.error('SSL connection error. Try setting DB_SSL=disable in .env file.');
-    }
+    console.error('Error connecting to database:', err.message);
     return;
   }
-  console.log('Database connected successfully');
   release();
 });
 

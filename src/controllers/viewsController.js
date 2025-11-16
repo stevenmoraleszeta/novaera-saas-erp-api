@@ -91,7 +91,6 @@ exports.updateViewColumn = async (req, res) => {
   try {
     const { id } = req.params;
     const updatedData = req.body;
-    console.log("clap data", updatedData)
     const result = await viewService.updateViewColumn({ id, ...updatedData });
     res.json(result);
   } catch (err) {

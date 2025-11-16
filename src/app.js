@@ -37,20 +37,27 @@ let allowedOrigins;
 
 if (process.env.CORS_ORIGIN) {
   // Use explicitly configured origins
-  allowedOrigins = process.env.CORS_ORIGIN.split(',').map(origin => origin.trim());
+  allowedOrigins = process.env.CORS_ORIGIN.split(',').map(origin => origin.trim()).filter(origin => origin.length > 0);
 } else if (process.env.NODE_ENV === 'production') {
   // Production: Only allow production frontend URL (no localhost)
   allowedOrigins = ['https://novaera-saas-erp.vercel.app'];
-  console.log('⚠️  CORS_ORIGIN not set in production. Using default production origin only.');
-  console.log('   Consider setting CORS_ORIGIN environment variable for better control.');
 } else {
   // Development: Allow localhost and production URL
   allowedOrigins = ['http://localhost:3000', 'https://novaera-saas-erp.vercel.app'];
 }
 
-console.log('🔒 CORS Configuration:');
-console.log('  Environment:', process.env.NODE_ENV || 'development');
-console.log('  Allowed origins:', allowedOrigins);
+// Normalize origins for comparison (remove trailing slashes, normalize protocol)
+function normalizeOrigin(origin) {
+  if (!origin) return origin;
+  // Remove trailing slash
+  origin = origin.replace(/\/$/, '');
+  // Ensure consistent protocol (http/https)
+  origin = origin.toLowerCase();
+  return origin;
+}
+
+// Normalize all allowed origins
+const normalizedAllowedOrigins = allowedOrigins.map(normalizeOrigin);
 
 app.use(cors({
   origin: function(origin, callback) {
@@ -61,7 +68,11 @@ app.use(cors({
       return callback(null, true);
     }
     
-    if (allowedOrigins.includes(origin)) {
+    // Normalize the incoming origin for comparison
+    const normalizedOrigin = normalizeOrigin(origin);
+    
+    // Check if normalized origin matches any allowed origin
+    if (normalizedAllowedOrigins.includes(normalizedOrigin)) {
       callback(null, true);
     } else {
       console.warn('🚫 CORS blocked request from:', origin);

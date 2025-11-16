@@ -13,10 +13,6 @@ exports.getColumns = async (req, res) => {
 exports.createColumn = async (req, res) => {
   try {
     const { custom_options, related_table_name, related_table_description, ...columnData } = req.body;
-    console.log('---[CREATE COLUMN]---');
-    console.log('Column data:', columnData);
-    console.log('Custom options:', custom_options);
-    console.log('Related table name:', related_table_name);
 
     // Si es columna tipo 'tabla', crear la tabla relacionada primero
     let relatedTable = null;
@@ -35,26 +31,21 @@ exports.createColumn = async (req, res) => {
 
     // Crear la columna
     const result = await columnsService.createColumn(columnData);
-    console.log('Column creation result:', result);
 
     // El procedimiento almacenado ahora devuelve el ID de la columna creada
     const newColumnId = result.column_id;
 
     // Si es una columna de tipo selección con opciones personalizadas
     if (columnData.data_type === 'select' && custom_options && Array.isArray(custom_options) && custom_options.length > 0) {
-      console.log('Processing custom options for select column');
       if (newColumnId) {
-        console.log('Creating custom options for column ID:', newColumnId);
         try {
           await columnOptionsService.createColumnOptions(newColumnId, custom_options);
-          console.log('Custom options created successfully');
         } catch (optErr) {
           console.error('Error creating custom options:', optErr);
           // Enviar error específico de opciones personalizadas
           return res.status(500).json({ error: 'Error al crear opciones personalizadas', details: optErr.message });
         }
       } else {
-        console.log('Error: Could not get newly created column ID');
         return res.status(500).json({ error: 'No se pudo obtener el ID de la columna creada' });
       }
     }

@@ -76,7 +76,6 @@ exports.renameColumnKeyInRecords = async ({ tableId, oldKey, newKey }) => {
 
 
 exports.addFieldToAllRecords = async ({ tableId, columnName, defaultValue }) => {
-  console.log("adding info to records:", tableId, columnName, defaultValue);
 
   const safeValue = defaultValue === undefined ? null : defaultValue;
 

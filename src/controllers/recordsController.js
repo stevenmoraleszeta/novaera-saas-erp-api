@@ -80,16 +80,14 @@ exports.updateOriginalRecordIds = async (req, res) => {
     const { tableId } = req.params;
     const { oldValue, newValue } = req.body
 
-    console.log("mtg ID", tableId, oldValue, newValue)
     const result = await recordsService.updateAllOriginalRecordIds({
       tableId: parseInt(tableId),
       oldValue: oldValue,
       newValue: newValue,
     });
     res.json(result);
-    console.log("mtg", result)
   } catch (err) {
-    console.log("mtg error", err)
+    console.error("Error updating original record IDs:", err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -99,15 +97,12 @@ exports.deleteByOriginalRecordId = async (req, res) => {
     const { tableId } = req.params;
     const { originalRecordId } = req.body;
 
-    console.log("🗑 Eliminando registros en tabla", tableId, "con original_record_id =", originalRecordId);
-
     const result = await recordsService.deleteRecordsByOriginalRecordId({
       tableId: parseInt(tableId),
       originalRecordId: parseInt(originalRecordId),
     });
 
     res.json(result);
-    console.log("✅ Eliminación completada:", result);
   } catch (err) {
     console.error("💥 Error eliminando registros:", err);
     res.status(500).json({ error: err.message });

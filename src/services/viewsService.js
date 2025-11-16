@@ -49,7 +49,6 @@ exports.updateView = async ({ id, name, sort_by, sort_direction, position_num })
 };
 
 exports.updateViewColumn = async ({ id, visible, filter_condition, filter_value, position_num, width_px, column_id }) => {
-  console.log("clap data INSIDE", id, visible, filter_condition, filter_value, position_num, width_px, column_id)
   const result = await pool.query(
     'SELECT sp_actualizar_columna_vista($1, $2, $3, $4, $5, $6, $7) AS message',
     [id, visible, filter_condition, filter_value, position_num, width_px, column_id]

@@ -160,7 +160,6 @@ class RecordsService {
 
   async updateAllOriginalRecordIds({ tableId, oldValue = 2147483647, newValue }) {
     const client = await pool.connect();
-    console.log("mtg ALL TABLES", oldValue, newValue);
     try {
       await client.query(
         `UPDATE records
@@ -184,7 +183,6 @@ class RecordsService {
 
   async deleteRecordsByOriginalRecordId({ tableId, originalRecordId  }) {
     const client = await pool.connect();
-    console.log("🗑 Eliminando registros con original_record_id =", originalRecordId, "en TODAS las tablas");
 
     try {
       await client.query(
