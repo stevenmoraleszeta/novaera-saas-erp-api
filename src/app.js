@@ -32,16 +32,39 @@ const app = express();
 app.set('trust proxy', 1);
 
 // CORS configuration - supports environment variable or default origins
-const allowedOrigins = process.env.CORS_ORIGIN 
-  ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
-  : ['http://localhost:3000', 'https://novaera-saas-erp.vercel.app'];
+// In production, only allow production origins. In development, allow localhost
+let allowedOrigins;
+
+if (process.env.CORS_ORIGIN) {
+  // Use explicitly configured origins
+  allowedOrigins = process.env.CORS_ORIGIN.split(',').map(origin => origin.trim());
+} else if (process.env.NODE_ENV === 'production') {
+  // Production: Only allow production frontend URL (no localhost)
+  allowedOrigins = ['https://novaera-saas-erp.vercel.app'];
+  console.log('⚠️  CORS_ORIGIN not set in production. Using default production origin only.');
+  console.log('   Consider setting CORS_ORIGIN environment variable for better control.');
+} else {
+  // Development: Allow localhost and production URL
+  allowedOrigins = ['http://localhost:3000', 'https://novaera-saas-erp.vercel.app'];
+}
+
+console.log('🔒 CORS Configuration:');
+console.log('  Environment:', process.env.NODE_ENV || 'development');
+console.log('  Allowed origins:', allowedOrigins);
 
 app.use(cors({
   origin: function(origin, callback) {
-    // Permitir solicitudes sin origen (como Postman) o si el origen está en la lista
-    if (!origin || allowedOrigins.includes(origin)) {
+    // Allow requests without origin (like Postman, curl, etc.) - but they still need auth
+    if (!origin) {
+      // Allow requests without origin (server-to-server, Postman, etc.)
+      // But they still need valid JWT token for protected routes
+      return callback(null, true);
+    }
+    
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.warn('🚫 CORS blocked request from:', origin);
       callback(new Error('No permitido por CORS'));
     }
   },
