@@ -6,12 +6,19 @@ exports.getRoles = async () => {
   return result.rows;
 };
 
-exports.createRole = async ({ name }) => {
-  // Solo acepta nombre, establece active = true por defecto
+exports.createRole = async ({ name, description = null, is_admin = false }) => {
+  // Usa la función crear_rol para mantener toda la lógica de validación en la BD
+  await pool.query(
+    'SELECT crear_rol($1, $2, $3) AS message',
+    [name, description, is_admin]
+  );
+
+  // Devuelve el rol recién creado consultándolo por nombre (evita hardcodear IDs)
   const result = await pool.query(
-    'INSERT INTO roles (name, active) VALUES ($1, true) RETURNING *',
+    'SELECT * FROM roles WHERE LOWER(name) = LOWER($1) ORDER BY id DESC LIMIT 1',
     [name]
   );
+
   return result.rows[0];
 };
 
